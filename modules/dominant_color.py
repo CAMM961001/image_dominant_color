@@ -7,7 +7,7 @@ from  urllib.request import urlopen
 
 def load_image(url:str):
     with urlopen(url=url) as url:
-        with open('temp.jpg', 'wb') as file:
+        with open('original.jpg', 'wb') as file:
             file.write(url.read())
 
 
