@@ -7,7 +7,6 @@ import modules.dominant_color as src
 import matplotlib.pyplot as plt
 
 URL = 'https://i.pinimg.com/originals/ee/d6/8c/eed68c61a18a23c9975a4400239cda72.jpg'
-#'https://pngimg.com/uploads/women_bag/women_bag_PNG6428.png'
 
 src.load_image(url=URL)
 
@@ -20,5 +19,7 @@ with open(input_path, 'rb') as in_img:
         output = remove(input)
         out_img.write(output)
 
+color_count = src.color_count(img_path=output_path)
+
 if __name__ == '__main__':
-    print('Done')
+    print(color_count[:5])
