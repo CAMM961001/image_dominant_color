@@ -1,12 +1,14 @@
-# Reference for background remove:
-# https://www.python-engineer.com/posts/remove_background/
+# Reference for background remove: https://www.python-engineer.com/posts/remove_background/
+# Reference for dominant color: https://github.com/fengsp/color-thief-py
 
 from rembg import remove
+from colorthief import ColorThief
 import modules.dominant_color as src
 
 import matplotlib.pyplot as plt
 
-URL = 'https://i.pinimg.com/originals/ee/d6/8c/eed68c61a18a23c9975a4400239cda72.jpg'
+# 'https://i.pinimg.com/originals/ee/d6/8c/eed68c61a18a23c9975a4400239cda72.jpg'
+URL = 'https://th.bing.com/th/id/OIP.34MwIAdC_dQ4EmavNamaKAHaJQ?rs=1&pid=ImgDetMain'
 
 src.load_image(url=URL)
 
@@ -19,7 +21,8 @@ with open(input_path, 'rb') as in_img:
         output = remove(input)
         out_img.write(output)
 
-color_count = src.color_count(img_path=output_path)
+dominant_color = ColorThief(output_path)
 
 if __name__ == '__main__':
-    print(color_count[:5])
+    print(f"Dominante: {dominant_color.get_color(quality=1)}")
+    print(f"Paleta: {dominant_color.get_palette(color_count=6)}")
