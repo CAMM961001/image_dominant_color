@@ -2,43 +2,77 @@
 # Reference for dominant color: https://github.com/fengsp/color-thief-py
 
 from rembg import remove
+from PIL import Image
 from colorthief import ColorThief
 
 import webcolors
+
+import streamlit as st
 import pandas as pd
 import modules.dominant_color as src
 
-# 'https://i.pinimg.com/originals/ee/d6/8c/eed68c61a18a23c9975a4400239cda72.jpg'
-URL = 'https://th.bing.com/th/id/OIP.34MwIAdC_dQ4EmavNamaKAHaJQ?rs=1&pid=ImgDetMain'
+# ---------------------------------------------------------------- App settings
+st.set_page_config(
+    page_title = 'Dominant Color'
+    ,layout = 'wide'
+    ,initial_sidebar_state='collapsed')
 
-src.load_image(url=URL)
+st.title(body='Dominant colors')
 
-input_path = 'original.jpg'
-output_path = 'no_background.png'
+st.write('To start provide an image URL:')
 
-with open(input_path, 'rb') as in_img:
-    with open(output_path, 'wb') as out_img:
-        input = in_img.read()
-        output = remove(input)
-        out_img.write(output)
+URL = st.text_input(label='URL', value=None)
 
-dominant_color = ColorThief(output_path)
 
-dominant_rgb = dominant_color.get_color(quality=1)
-palette_rgb = dominant_color.get_palette(color_count=6)
+if URL != None:
 
-colors = {
-    'type': ['rgb', 'hex', 'label']
-    ,'color': [
-        dominant_rgb
-        ,webcolors.rgb_to_hex(dominant_rgb)
-        ,src.closest_color(requested_colour=dominant_rgb)]
-    ,'palette': [
-        palette_rgb
-        ,[webcolors.rgb_to_hex(col) for col in palette_rgb]
-        ,[src.closest_color(col)for col in palette_rgb]]}
+    src.load_image(url=URL)
 
-colors = pd.DataFrame(data=colors).set_index('type')
+    input_path = 'original.jpg'
+    output_path = 'no_background.png'
 
-if __name__ == '__main__':
-    print(colors)
+    with open(input_path, 'rb') as in_img:
+        with open(output_path, 'wb') as out_img:
+            input = in_img.read()
+            output = remove(input)
+            out_img.write(output)
+
+    dominant_color = ColorThief(output_path)
+
+    dominant_rgb = dominant_color.get_color(quality=1)
+    palette_rgb = dominant_color.get_palette(color_count=6)
+
+    colors = {
+        'type': ['rgb', 'hex', 'label']
+        ,'dominant': [
+            str(dominant_rgb)
+            ,webcolors.rgb_to_hex(dominant_rgb)
+            ,src.closest_color(requested_colour=dominant_rgb)]
+        ,'palette': [
+            ' | '.join(str(rgb) for rgb in palette_rgb)
+            ,' | '.join([webcolors.rgb_to_hex(col) for col in palette_rgb])
+            ,' | '.join([src.closest_color(col)for col in palette_rgb])]}
+
+    colors = pd.DataFrame(data=colors).set_index('type')
+
+    col1, col2 = st.columns(spec=(1, 2.5), gap='small')
+
+    with col1:
+        img = Image.open(input_path)
+        st.image(
+            image=img
+            ,use_column_width=True)
+    
+    with col2:
+        st.write('Dominant:')
+        st.write(
+            f'''
+            <svg xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="20" fill={colors.dominant.loc['hex']} />
+            </svg>'''
+            ,unsafe_allow_html=True)
+        
+        st.dataframe(
+            data=colors
+            ,width=800
+            ,hide_index=False)
